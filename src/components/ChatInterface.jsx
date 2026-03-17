@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { sendToGroq } from "../utils/groqChat";
 import { sendConfirmationEmail } from "../utils/sendEmail";
 import CallButton from "./CallButton";
+import QuickReplies from "./QuickReplies";
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState([
@@ -64,13 +65,14 @@ export default function ChatInterface() {
     return { cleanText, updatedPatient };
   };
 
-  const sendMessage = async () => {
-    if (!input.trim() || isTyping) return;
+  const sendMessage = async (directText = null) => {
+    const messageText = directText || input;
+    if (!messageText.trim() || isTyping) return;
 
     const userMsg = {
       id: Date.now(),
       role: "user",
-      text: input,
+      text: messageText,
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -153,13 +155,32 @@ export default function ChatInterface() {
 
       {/* Messages */}
       <div className="messages-area">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`message-row ${msg.role}`}>
-            {msg.role === "assistant" && <div className="msg-avatar">K</div>}
-            <div className="message-bubble glass">
-              <p className="msg-text">{msg.text}</p>
-              <span className="msg-time">{msg.time}</span>
+        {messages.map((msg, index) => (
+          <div key={msg.id}>
+            <div className={`message-row ${msg.role}`}>
+              {msg.role === "assistant" && <div className="msg-avatar">K</div>}
+              <div className="message-bubble glass">
+                <p className="msg-text">{msg.text}</p>
+                <span className="msg-time">{msg.time}</span>
+              </div>
             </div>
+            {/* Show chips only after the last assistant message */}
+            {msg.role === "assistant" &&
+              index === messages.length - 1 &&
+              !isTyping && (
+                <QuickReplies
+                  lastMessage={msg.text}
+                  patientData={patientData}
+                  onSelect={(chip) => {
+                    if (chip === "Call me instead 📞") {
+                      document.querySelector(".call-btn")?.click();
+                    } else {
+                      setInput(chip);
+                      setTimeout(() => sendMessage(chip), 100);
+                    }
+                  }}
+                />
+              )}
           </div>
         ))}
 
