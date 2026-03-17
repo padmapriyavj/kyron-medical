@@ -93,13 +93,16 @@ export default function ChatInterface() {
         patientData
       );
       setPatientData(updatedPatient);
+      const finalText =
+        cleanText.trim() ||
+        "Your appointment has been confirmed! Is there anything else I can help you with?";
 
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
           role: "assistant",
-          text: cleanText,
+          text: finalText,
           time: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
