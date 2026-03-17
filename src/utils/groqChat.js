@@ -1,16 +1,24 @@
-import { doctors, practiceInfo } from '../data/doctors'
+import { doctors, practiceInfo } from "../data/doctors";
 
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 const buildSystemPrompt = (patientData) => {
-  const doctorsInfo = doctors.map(d => `
+  const doctorsInfo = doctors
+    .map(
+      (d) => `
   - ${d.name} (${d.specialty})
-    Treats: ${d.bodyParts.join(', ')}
+    Treats: ${d.bodyParts.join(", ")}
     Availability:
-    ${d.availability.map(a => `${a.day} ${a.date}: ${a.slots.join(', ')}`).join('\n    ')}
-  `).join('\n')
+    ${d.availability
+      .map((a) => `${a.day} ${a.date}: ${a.slots.join(", ")}`)
+      .join("\n    ")}
+  `
+    )
+    .join("\n");
 
-  return `You are a friendly, professional AI patient intake assistant for ${practiceInfo.name}.
+  return `You are a friendly, professional AI patient intake assistant for ${
+    practiceInfo.name
+  }.
 
 PRACTICE INFO:
 - Address: ${practiceInfo.address}
@@ -53,34 +61,34 @@ RULES:
 - When you have collected the patient's email, end your message with:
   EMAIL_COLLECTED:{"email":"..."}
 - When you have collected the patient's phone, end your message with:
-  PHONE_COLLECTED:{"phone":"..."}`
-}
+  PHONE_COLLECTED:{"phone":"..."}`;
+};
 
 export async function sendToGroq(messages, patientData) {
-  const systemPrompt = buildSystemPrompt(patientData)
+  const systemPrompt = buildSystemPrompt(patientData);
 
   const response = await fetch(GROQ_API_URL, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
+      model: "llama-3.1-8b-instant",
       messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages.map(m => ({ role: m.role, content: m.text }))
+        { role: "system", content: systemPrompt },
+        ...messages.map((m) => ({ role: m.role, content: m.text })),
       ],
       temperature: 0.7,
-      max_tokens: 500
-    })
-  })
+      max_tokens: 500,
+    }),
+  });
 
   if (!response.ok) {
-    const err = await response.text()
-    throw new Error(`Groq error: ${err}`)
+    const err = await response.text();
+    throw new Error(`Groq error: ${err}`);
   }
 
-  const data = await response.json()
-  return data.choices[0].message.content
+  const data = await response.json();
+  return data.choices[0].message.content;
 }
