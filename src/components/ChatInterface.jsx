@@ -66,7 +66,7 @@ export default function ChatInterface() {
   };
 
   const sendMessage = async (directText = null) => {
-    const messageText = directText || input;
+    const messageText = typeof directText === "string" ? directText : input;
     if (!messageText.trim() || isTyping) return;
 
     const userMsg = {
@@ -175,8 +175,7 @@ export default function ChatInterface() {
                     if (chip === "Call me instead 📞") {
                       document.querySelector(".call-btn")?.click();
                     } else {
-                      setInput(chip);
-                      setTimeout(() => sendMessage(chip), 100);
+                      sendMessage(chip);
                     }
                   }}
                 />
