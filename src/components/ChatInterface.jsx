@@ -31,27 +31,27 @@ export default function ChatInterface() {
     let cleanText = text;
 
     // Parse EMAIL_COLLECTED
-    const emailMatch = text.match(/EMAIL_COLLECTED:(\{[^}]+\})/);
+    const emailMatch = text.match(/EMAIL_COLLECTED:\s*(\{[^}]+\})/);
     if (emailMatch) {
       try {
         const { email } = JSON.parse(emailMatch[1]);
         updatedPatient.email = email;
       } catch {}
-      cleanText = cleanText.replace(/EMAIL_COLLECTED:\{[^}]+\}/, "").trim();
+      cleanText = cleanText.replace(/EMAIL_COLLECTED:\s*\{[^}]+\}/, "").trim();
     }
 
     // Parse PHONE_COLLECTED
-    const phoneMatch = text.match(/PHONE_COLLECTED:(\{[^}]+\})/);
+    const phoneMatch = text.match(/PHONE_COLLECTED:\s*(\{[^}]+\})/);
     if (phoneMatch) {
       try {
         const { phone } = JSON.parse(phoneMatch[1]);
         updatedPatient.phone = phone;
       } catch {}
-      cleanText = cleanText.replace(/PHONE_COLLECTED:\{[^}]+\}/, "").trim();
+      cleanText = cleanText.replace(/PHONE_COLLECTED:\s*\{[^}]+\}/, "").trim();
     }
 
     // Parse APPOINTMENT_BOOKED
-    const bookingMatch = text.match(/APPOINTMENT_BOOKED:(\{.*?\})/);
+    const bookingMatch = text.match(/APPOINTMENT_BOOKED:\s*(\{[\s\S]*?\})/);
     if (bookingMatch) {
       try {
         const bookingData = JSON.parse(bookingMatch[1]);
@@ -59,7 +59,9 @@ export default function ChatInterface() {
         updatedPatient = { ...updatedPatient, ...bookingData };
         sendConfirmationEmail(bookingData);
       } catch {}
-      cleanText = cleanText.replace(/APPOINTMENT_BOOKED:\{.*?\}/, "").trim();
+      cleanText = cleanText
+        .replace(/APPOINTMENT_BOOKED:\s*\{[\s\S]*?\}/, "")
+        .trim();
     }
 
     return { cleanText, updatedPatient };
