@@ -76,8 +76,8 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         from: "Kyron Medical <onboarding@resend.dev>",
-        to: [process.env.RESEND_TO_EMAIL || patientEmail],
-        subject: `Appointment Confirmed — ${doctorName} on ${date} at ${time}`,
+        to: [process.env.RESEND_TO_EMAIL],
+        subject: `Appointment Confirmed for ${patientName} — ${doctorName} on ${date} at ${time}`,
         html,
       }),
     });
